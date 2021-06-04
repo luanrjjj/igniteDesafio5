@@ -70,6 +70,7 @@ const FileInputBase: ForwardRefRenderFunction<
 
   const handleImageUpload = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+      console.log(2999,event.target.files)
       if (!event.target.files?.length) {
         return;
       }
@@ -84,8 +85,12 @@ const FileInputBase: ForwardRefRenderFunction<
 
       const formData = new FormData();
 
+      console.log(500,event.target.files[0])
+      
       formData.append(event.target.name, event.target.files[0]);
       formData.append('key', process.env.NEXT_PUBLIC_IMGBB_API_KEY);
+
+      console.log(3000,formData)
 
       const { CancelToken } = axios;
       const source = CancelToken.source();
@@ -99,6 +104,7 @@ const FileInputBase: ForwardRefRenderFunction<
         cancelToken: source.token,
       } as AxiosRequestConfig;
 
+      console.log(3001,formData)
       try {
         const response = await api.post(
           'https://api.imgbb.com/1/upload',
@@ -108,6 +114,9 @@ const FileInputBase: ForwardRefRenderFunction<
 
         setImageUrl(response.data.data.url);
         setLocalImageUrl(URL.createObjectURL(event.target.files[0]));
+       
+        console.log(3002,response)
+       
       } catch (err) {
         if (err?.message === 'Cancelled image upload.') return;
 

@@ -25,9 +25,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ): Promise<void> {
+  console.log(10002,req.body)
   if (req.method === 'POST') {
     const { url, title, description } = req.body;
-
+    console.log(10001, url)
     return client
       .query(
         query.Create(query.Collection('images'), {

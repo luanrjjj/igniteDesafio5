@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 
 import { api } from '../../services/api';
-import { FileInput } from '../Input/FileInput';
 import { TextInput } from '../Input/TextInput';
-import axios from 'axios';
+import { FileInput } from '../Input/FileInput';
 
+import axios from 'axios';
 interface FormAddImageProps {
   closeModal: () => void;
 }
@@ -28,10 +28,10 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
 
   const formValidations = {
     image: {
-      required:true ,
+      required:'Arquivo Obrigatório' ,
       validate: {
-        lessThan10MB: file => file[0].size<10,
-        acceptedFormats: file => formats.includes(file[0].type) 
+        lessThan10MB: fileList => fileList[0].size<100000000000,
+        //acceptedFormats: file => formats.includes(file[0].type) 
       }
       // TODO REQUIRED, LESS THAN 10 MB AND ACCEPTED FORMATS VALIDATIONS
     },
@@ -61,7 +61,21 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
 
   const queryClient = useQueryClient();
   const mutation = useMutation( 
-    (formData:FormAddImageData) => axios.post('/api/images',formData),  // TODO MUTATION API POST REQUEST,
+    async (formData:FormAddImageData) => { 
+
+      console.log(7000,formData)
+      console.log(7001,imageUrl)
+
+      const response = await axios.post('/api/images',{
+        url:imageUrl,
+        title:formData.title,
+        description:formData.description
+      })
+
+      console.log(response)
+
+   return response.data
+             },  // TODO MUTATION API POST REQUEST,
     {
       onSuccess: () => {
         queryClient.invalidateQueries('images')
@@ -78,9 +92,12 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
     setError,
     trigger,
   } = useForm();
+
+  
   const { errors } = formState;
 
   const onSubmit = async (data:FormAddImageData ): Promise<void> => {
+    console.log(10000, data)
     try {
       if (!imageUrl) {
         toast({
@@ -114,14 +131,14 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
     } finally {
      setImageUrl('')
      setLocalImageUrl('')
-
+     closeModal();
       
       // TODO CLEAN FORM, STATES AND CLOSE MODAL
     }
   };
 
   return (
-    <Box as="form" width="100%" onSubmit={handleSubmit(onSubmit)}>
+    <Box as="form" width="100%" onSubmit={handleSubmit(onSubmit)} >
       <Stack spacing={4}>
         <FileInput
           setImageUrl={setImageUrl}
@@ -129,7 +146,7 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
           setLocalImageUrl={setLocalImageUrl}
           setError={setError}
           trigger={trigger}
-          {...register ("Image", formValidations.image)}
+          {...register ("image", formValidations.image)}
           error={errors.image}
           
           // TODO SEND IMAGE ERRORS
@@ -138,7 +155,7 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
 
         <TextInput
           placeholder="Título da imagem..."
-          {...register('Título',formValidations.title)}
+          {...register('title',formValidations.title)}
           // TODO SEND TITLE ERRORS
           // TODO REGISTER TITLE INPUT WITH VALIDATIONS
           error={errors.TITLE}
@@ -146,7 +163,7 @@ export function FormAddImage({ closeModal }: FormAddImageProps): JSX.Element {
 
         <TextInput
           placeholder="Descrição da imagem..."
-          {...register('Descrição',formValidations.description)}
+          {...register('description',formValidations.description)}
           error = {errors.description}
           // TODO SEND DESCRIPTION ERRORS
           // TODO REGISTER DESCRIPTION INPUT WITH VALIDATIONS
